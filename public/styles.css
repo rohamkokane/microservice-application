@@ -1,0 +1,34 @@
+:root { --ink: #1c2637; --muted: #687184; --line: #dce1e8; --navy: #112a48; --peach: #efb990; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; color: var(--ink); font-family: "DM Sans", sans-serif; background: #f7f8fa; }
+.shell { display: grid; grid-template-columns: minmax(360px, 43%) 1fr; min-height: 100vh; }
+.welcome-panel { position: relative; overflow: hidden; padding: 52px clamp(38px, 6vw, 96px); display: flex; flex-direction: column; color: #f8f5ee; background: var(--navy); isolation: isolate; }
+.brand { position: relative; z-index: 2; color: inherit; font-size: 20px; font-weight: 700; letter-spacing: -.5px; text-decoration: none; }
+.brand-mark { display: inline-grid; width: 29px; height: 29px; margin-right: 8px; place-items: center; border: 1px solid #f2c6a3; border-radius: 50%; color: #f7c7a1; font-family: "Playfair Display", serif; font-size: 17px; }
+.panel-copy { position: relative; z-index: 2; max-width: 470px; margin: auto 0; padding-top: 55px; }
+.eyebrow { margin: 0 0 17px; color: #9ca9b8; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+.panel-copy h1 { max-width: 430px; margin: 0; font-family: "Playfair Display", serif; font-size: clamp(44px, 5vw, 76px); font-weight: 600; letter-spacing: -3px; line-height: 1.04; }
+.intro { max-width: 370px; margin: 28px 0 0; color: #c7d0da; font-size: 17px; line-height: 1.65; }
+.quote { position: relative; z-index: 2; margin: 0; color: #a9b5c4; font-size: 13px; }
+.orb { position: absolute; z-index: -1; border-radius: 50%; filter: blur(1px); }
+.orb-one { width: 470px; height: 470px; top: -170px; right: -210px; background: #254667; opacity: .75; }
+.orb-two { width: 310px; height: 310px; right: -80px; bottom: 60px; border: 1px solid #52728e; opacity: .5; }
+.grid-lines { position: absolute; inset: 0; z-index: -2; opacity: .07; background-image: linear-gradient(#bcd0e0 1px, transparent 1px), linear-gradient(90deg, #bcd0e0 1px, transparent 1px); background-size: 48px 48px; }
+.login-panel { display: grid; min-width: 0; place-items: center; padding: 50px 30px; background: #fff; }
+.form-wrap { width: min(100%, 416px); }
+.accent { color: #d88758; }
+h2 { margin: 0; font-size: 32px; letter-spacing: -.9px; line-height: 1.2; }
+.subtext { margin: 13px 0 36px; color: var(--muted); font-size: 15px; line-height: 1.6; }
+form { display: flex; flex-direction: column; }
+label { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
+input { width: 100%; height: 51px; margin-bottom: 22px; padding: 0 15px; border: 1px solid var(--line); border-radius: 7px; outline: none; color: var(--ink); font: inherit; transition: border .2s, box-shadow .2s; }
+input::placeholder { color: #a5acb6; } input:focus { border-color: #5980a8; box-shadow: 0 0 0 3px #e5eff8; }
+.password-field { position: relative; } .password-field input { padding-right: 64px; }
+.toggle-password { position: absolute; top: 1px; right: 3px; height: 47px; padding: 0 12px; border: 0; background: transparent; color: #557393; cursor: pointer; font: 600 12px "DM Sans", sans-serif; }
+.form-options { display: flex; align-items: center; justify-content: space-between; margin: -2px 0 28px; font-size: 13px; }
+.form-options a, .signup a { color: #406b95; font-weight: 600; text-decoration: none; }.form-options a:hover, .signup a:hover { text-decoration: underline; }
+.checkbox { display: flex; align-items: center; gap: 8px; margin: 0; color: #566174; font-weight: 400; cursor: pointer; }.checkbox input { width: 16px; height: 16px; margin: 0; accent-color: var(--navy); }
+.submit-button { display: flex; height: 53px; align-items: center; justify-content: center; gap: 16px; border: 0; border-radius: 7px; color: white; background: var(--navy); cursor: pointer; font: 600 15px "DM Sans", sans-serif; transition: background .2s, transform .2s; }.submit-button:hover { background: #1c426d; transform: translateY(-1px); }.submit-button span { font-size: 20px; }
+.form-message { min-height: 20px; margin: 13px 0 0; color: #bd4e4e; font-size: 13px; }.form-message.success { color: #268257; }
+.signup { margin: 29px 0 0; color: var(--muted); text-align: center; font-size: 14px; }
+@media (max-width: 780px) { .shell { grid-template-columns: 1fr; }.welcome-panel { min-height: 310px; padding: 32px; }.panel-copy { margin: 45px 0 15px; padding: 0; }.panel-copy h1 { font-size: 45px; }.intro, .quote { display: none; }.login-panel { padding: 54px 26px; } }
