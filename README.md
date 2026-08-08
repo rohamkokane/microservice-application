@@ -1,62 +1,75 @@
-# Lumina authentication app
+# Lumina task manager
 
-A small Node.js application with responsive sign-in and registration pages. It supports creating accounts, persistent user storage, password verification, and cookie-based sessions.
+Lumina is a Node.js task-management application with account registration, secure login, and a private task dashboard for each user.
 
-## Start the app
+## Features
 
-No package installation is required; the app uses only Node.js built-in modules.
+- Register with a username, email address, and password
+- Sign in and sign out with secure cookie-based sessions
+- Personalized welcome message using the saved username
+- Create multiple tasks
+- Set each task’s priority: Low, Medium, or High
+- Add an optional deadline date
+- Track task status: Pending or Completed
+- Mark a task complete or reopen it
+- Delete tasks
+- Keep users and tasks persistent and isolated per account
+
+## Run locally
+
+The project has no external dependencies; it uses Node.js built-in modules only.
 
 ```powershell
 npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) for the login page, or [http://localhost:3000/register.html](http://localhost:3000/register.html) to create an account.
+Open these pages in your browser:
 
-After signing in, users are taken to the task dashboard. They can add multiple tasks, select Low, Medium, or High priority, add an optional deadline date, mark tasks complete or reopen them, and delete tasks. Each task is visible only to the account that created it and is saved in `data/tasks.json`.
+- Login: [http://localhost:3000](http://localhost:3000)
+- Registration: [http://localhost:3000/register.html](http://localhost:3000/register.html)
+- Task dashboard: [http://localhost:3000/dashboard.html](http://localhost:3000/dashboard.html)
 
-## Create an account
-
-The registration page asks for:
-
-- Username (2–40 characters)
-- Email address
-- Password (at least 8 characters)
-
-New accounts are saved in `data/users.json`. Passwords are never stored as plain text: they are salted and hashed using PBKDF2-SHA256. Once registration succeeds, the user is signed in automatically.
-
-When that user signs in later, the login page shows their saved username in the welcome message.
+The dashboard requires an authenticated session. Login and registration redirect users there automatically.
 
 ## Demo account
 
-For first-time local use, a demo account is created automatically:
+On first start, the app creates a demo account:
 
 - Email: `demo@lumina.local`
 - Password: `ChangeMe123!`
 
-To set a different demo password before the first start:
+To set a different demo password before the first server start:
 
 ```powershell
 $env:DEMO_PASSWORD = 'YourSecurePassword'
 npm start
 ```
 
-## API endpoints
+## Stored data
 
-| Method | Endpoint | Purpose |
+| File | Contents |
+| --- | --- |
+| `data/users.json` | Usernames, email addresses, and password hashes. |
+| `data/tasks.json` | User-owned tasks, priorities, deadlines, and status. |
+
+Both data files are excluded from Git by `.gitignore`.
+
+## API
+
+| Method | Endpoint | Description |
 | --- | --- | --- |
-| `POST` | `/api/register` | Creates an account and starts a session. |
-| `POST` | `/api/login` | Verifies credentials and starts a session. |
-| `GET` | `/api/session` | Returns the currently authenticated user. |
+| `POST` | `/api/register` | Creates a user and starts a session. |
+| `POST` | `/api/login` | Authenticates a user and starts a session. |
+| `GET` | `/api/session` | Returns the signed-in user. |
 | `POST` | `/api/logout` | Ends the current session. |
-| `GET` | `/api/tasks` | Returns tasks belonging to the signed-in user. |
-| `POST` | `/api/tasks` | Creates a task with a title and priority. |
-| `DELETE` | `/api/tasks/:id` | Deletes one of the signed-in user's tasks. |
-| `PATCH` | `/api/tasks/:id` | Updates a task's status (`pending` or `completed`). |
+| `GET` | `/api/tasks` | Lists tasks for the signed-in user. |
+| `POST` | `/api/tasks` | Creates a task with `title`, `priority`, and optional `deadline`. |
+| `PATCH` | `/api/tasks/:id` | Changes a task status to `pending` or `completed`. |
+| `DELETE` | `/api/tasks/:id` | Deletes one of the signed-in user’s tasks. |
 
-## Security notes
+## Security
 
-- Password hashes use PBKDF2-SHA256 with a unique random salt.
-- Password verification uses a constant-time comparison.
-- Sessions use `HttpOnly`, `SameSite=Lax` cookies and expire after eight hours.
-- `data/users.json` is excluded from Git via `.gitignore`.
-- In production, run behind HTTPS and set `NODE_ENV=production`; this adds the cookie's `Secure` flag.
+- Passwords are salted and hashed with PBKDF2-SHA256; plain-text passwords are not stored.
+- Login uses a constant-time password-hash comparison.
+- Sessions use `HttpOnly` and `SameSite=Lax` cookies and expire after eight hours.
+- Set `NODE_ENV=production` when running behind HTTPS to add the cookie `Secure` flag.
