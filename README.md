@@ -12,7 +12,7 @@ npm start
 
 Open [http://localhost:3000](http://localhost:3000) for the login page, or [http://localhost:3000/register.html](http://localhost:3000/register.html) to create an account.
 
-After signing in, users are taken to the task dashboard. They can add multiple tasks, select Low, Medium, or High priority, and delete tasks. Each task is visible only to the account that created it and is saved in `data/tasks.json`.
+After signing in, users are taken to the task dashboard. They can add multiple tasks, select Low, Medium, or High priority, add an optional deadline date, mark tasks complete or reopen them, and delete tasks. Each task is visible only to the account that created it and is saved in `data/tasks.json`.
 
 ## Create an account
 
@@ -51,6 +51,7 @@ npm start
 | `GET` | `/api/tasks` | Returns tasks belonging to the signed-in user. |
 | `POST` | `/api/tasks` | Creates a task with a title and priority. |
 | `DELETE` | `/api/tasks/:id` | Deletes one of the signed-in user's tasks. |
+| `PATCH` | `/api/tasks/:id` | Updates a task's status (`pending` or `completed`). |
 
 ## Security notes
 

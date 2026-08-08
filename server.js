@@ -94,12 +94,13 @@ const server = http.createServer(async (req, res) => {
     const user = requireUser(req, res);
     if (!user) return;
     try {
-      const { title, priority } = await getBody(req);
+      const { title, priority, deadline } = await getBody(req);
       const cleanTitle = typeof title === 'string' ? title.trim() : '';
       if (!cleanTitle || cleanTitle.length > 140) return sendJson(res, 400, { message: 'Task title must be between 1 and 140 characters.' });
       if (!['low', 'medium', 'high'].includes(priority)) return sendJson(res, 400, { message: 'Choose a valid priority.' });
+      if (deadline && (typeof deadline !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(deadline) || Number.isNaN(Date.parse(`${deadline}T00:00:00Z`)))) return sendJson(res, 400, { message: 'Choose a valid deadline date.' });
       const tasks = readTasks();
-      const task = { id: crypto.randomUUID(), userId: user.id, title: cleanTitle, priority, createdAt: new Date().toISOString() };
+      const task = { id: crypto.randomUUID(), userId: user.id, title: cleanTitle, priority, deadline: deadline || null, status: 'pending', createdAt: new Date().toISOString() };
       tasks.push(task); saveTasks(tasks);
       return sendJson(res, 201, { task });
     } catch { return sendJson(res, 400, { message: 'Invalid request.' }); }
@@ -113,6 +114,21 @@ const server = http.createServer(async (req, res) => {
     if (!task) return sendJson(res, 404, { message: 'Task not found.' });
     saveTasks(tasks.filter((item) => item.id !== taskId));
     return sendJson(res, 200, { message: 'Task deleted.' });
+  }
+  if (req.method === 'PATCH' && /^\/api\/tasks\/[^/]+$/.test(pathname)) {
+    const user = requireUser(req, res);
+    if (!user) return;
+    try {
+      const { status } = await getBody(req);
+      if (!['pending', 'completed'].includes(status)) return sendJson(res, 400, { message: 'Choose a valid task status.' });
+      const tasks = readTasks();
+      const task = tasks.find((item) => item.id === pathname.split('/').pop() && item.userId === user.id);
+      if (!task) return sendJson(res, 404, { message: 'Task not found.' });
+      task.status = status;
+      task.completedAt = status === 'completed' ? new Date().toISOString() : null;
+      saveTasks(tasks);
+      return sendJson(res, 200, { task });
+    } catch { return sendJson(res, 400, { message: 'Invalid request.' }); }
   }
   if (req.method === 'POST' && pathname === '/api/register') {
     try {
