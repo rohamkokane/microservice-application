@@ -1,3 +1,4 @@
-data/users.json
-data/tasks.json
+data/
+auth-service/data/users.json
+task-service/data/tasks.json
 node_modules/

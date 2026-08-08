@@ -1,75 +1,87 @@
-# Lumina task manager
+# Lumina microservices
 
-Lumina is a Node.js task-management application with account registration, secure login, and a private task dashboard for each user.
+Lumina is now split into two independently runnable Node.js services. There are no external package dependencies.
 
-## Features
+## Project layout
 
-- Register with a username, email address, and password
-- Sign in and sign out with secure cookie-based sessions
-- Personalized welcome message using the saved username
-- Create multiple tasks
-- Set each task’s priority: Low, Medium, or High
-- Add an optional deadline date
-- Track task status: Pending or Completed
-- Mark a task complete or reopen it
-- Delete tasks
-- Keep users and tasks persistent and isolated per account
+```text
+microservice-application/
+├── auth-service/       # Authentication API and user data
+├── task-service/       # Task CRUD API and task data
+├── frontend/           # Login, registration, dashboard, JavaScript, and CSS
+├── .gitignore
+├── package.json
+└── README.md
+```
+
+The auth service serves the files in `frontend/`, keeping browser assets separate from service code while still providing a simple local development entry point.
+
+## Services
+
+| Service | Default port | Responsibility |
+| --- | --- | --- |
+| `auth-service` | `3001` | Registration, login, logout, sessions, and user data. It also serves the browser UI. |
+| `task-service` | `3002` | Task creation, listing, completion status, deadlines, priorities, and deletion. |
+
+The task service does not store or validate passwords. For every task request, it forwards the browser session cookie to the auth service's `/api/session` endpoint and uses the verified user identity returned there.
 
 ## Run locally
 
-The project has no external dependencies; it uses Node.js built-in modules only.
+Start each service in its own terminal from the repository root:
 
 ```powershell
-npm start
+npm run start:auth
 ```
-
-Open these pages in your browser:
-
-- Login: [http://localhost:3000](http://localhost:3000)
-- Registration: [http://localhost:3000/register.html](http://localhost:3000/register.html)
-- Task dashboard: [http://localhost:3000/dashboard.html](http://localhost:3000/dashboard.html)
-
-The dashboard requires an authenticated session. Login and registration redirect users there automatically.
-
-## Demo account
-
-On first start, the app creates a demo account:
-
-- Email: `demo@lumina.local`
-- Password: `ChangeMe123!`
-
-To set a different demo password before the first server start:
 
 ```powershell
-$env:DEMO_PASSWORD = 'YourSecurePassword'
-npm start
+npm run start:tasks
 ```
 
-## Stored data
+Then open [http://localhost:3001](http://localhost:3001).
 
-| File | Contents |
-| --- | --- |
-| `data/users.json` | Usernames, email addresses, and password hashes. |
-| `data/tasks.json` | User-owned tasks, priorities, deadlines, and status. |
+## Configuration
 
-Both data files are excluded from Git by `.gitignore`.
+| Service | Variable | Default | Purpose |
+| --- | --- | --- | --- |
+| Auth | `PORT` | `3001` | Auth service listening port. |
+| Auth | `NODE_ENV` | — | Set to `production` behind HTTPS to mark cookies `Secure`. |
+| Task | `PORT` | `3002` | Task service listening port. |
+| Task | `AUTH_SERVICE_URL` | `http://localhost:3001` | URL of the auth service for session validation. |
+| Task | `WEB_ORIGIN` | `http://localhost:3001` | Allowed UI origin for browser requests. |
 
-## API
+## Browser features
+
+- Register with username, email, and password
+- Log in and out with session cookies
+- Create user-private tasks
+- Choose Low, Medium, or High priority
+- Add an optional deadline
+- Mark tasks Completed or reopen them as Pending
+- Delete tasks
+
+## Data ownership
+
+- `auth-service/data/users.json` contains user information and password hashes.
+- `task-service/data/tasks.json` contains task records only.
+
+Passwords are salted and hashed with PBKDF2-SHA256; they are never stored in the task service. Sessions use `HttpOnly` and `SameSite=Lax` cookies and expire after eight hours.
+
+## HTTP APIs
+
+### Auth service (`http://localhost:3001`)
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `POST` | `/api/register` | Creates a user and starts a session. |
-| `POST` | `/api/login` | Authenticates a user and starts a session. |
-| `GET` | `/api/session` | Returns the signed-in user. |
-| `POST` | `/api/logout` | Ends the current session. |
-| `GET` | `/api/tasks` | Lists tasks for the signed-in user. |
-| `POST` | `/api/tasks` | Creates a task with `title`, `priority`, and optional `deadline`. |
-| `PATCH` | `/api/tasks/:id` | Changes a task status to `pending` or `completed`. |
-| `DELETE` | `/api/tasks/:id` | Deletes one of the signed-in user’s tasks. |
+| `POST` | `/api/register` | Creates a user and begins a session. |
+| `POST` | `/api/login` | Authenticates a user and begins a session. |
+| `GET` | `/api/session` | Returns the authenticated user from the session cookie. |
+| `POST` | `/api/logout` | Ends the active session. |
 
-## Security
+### Task service (`http://localhost:3002`)
 
-- Passwords are salted and hashed with PBKDF2-SHA256; plain-text passwords are not stored.
-- Login uses a constant-time password-hash comparison.
-- Sessions use `HttpOnly` and `SameSite=Lax` cookies and expire after eight hours.
-- Set `NODE_ENV=production` when running behind HTTPS to add the cookie `Secure` flag.
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/api/tasks` | Lists the signed-in user's tasks. |
+| `POST` | `/api/tasks` | Creates a task with title, priority, and optional deadline. |
+| `PATCH` | `/api/tasks/:id` | Changes task status to `pending` or `completed`. |
+| `DELETE` | `/api/tasks/:id` | Deletes a task belonging to the signed-in user. |

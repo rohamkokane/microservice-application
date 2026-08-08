@@ -1,10 +1,10 @@
 {
-  "name": "login-page-app",
+  "name": "lumina-microservices",
   "version": "1.0.0",
   "private": true,
-  "description": "A simple Node.js login page",
+  "description": "Lumina auth and task microservices",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start:auth": "npm --prefix auth-service start",
+    "start:tasks": "npm --prefix task-service start"
   }
 }
