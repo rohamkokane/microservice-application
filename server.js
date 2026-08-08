@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const publicDir = path.join(__dirname, 'public');
 const dataDir = path.join(__dirname, 'data');
 const usersFile = path.join(dataDir, 'users.json');
+const tasksFile = path.join(dataDir, 'tasks.json');
 const port = process.env.PORT || 3000;
 const sessions = new Map();
 const sessionLifetimeMs = 1000 * 60 * 60 * 8;
@@ -31,6 +32,13 @@ function saveUsers(users) {
   fs.mkdirSync(dataDir, { recursive: true });
   fs.writeFileSync(usersFile, JSON.stringify(users, null, 2), { mode: 0o600 });
 }
+function readTasks() {
+  return fs.existsSync(tasksFile) ? JSON.parse(fs.readFileSync(tasksFile, 'utf8')) : [];
+}
+function saveTasks(tasks) {
+  fs.mkdirSync(dataDir, { recursive: true });
+  fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2), { mode: 0o600 });
+}
 function parseCookies(req) {
   return Object.fromEntries((req.headers.cookie || '').split(';').filter(Boolean).map((entry) => {
     const index = entry.indexOf('='); return [entry.slice(0, index).trim(), decodeURIComponent(entry.slice(index + 1))];
@@ -55,6 +63,12 @@ function getSession(req) {
   if (!session || session.expiresAt < Date.now()) { if (token) sessions.delete(token); return null; }
   return { token, ...session };
 }
+function requireUser(req, res) {
+  const session = getSession(req);
+  const user = session && readUsers().find((item) => item.id === session.userId);
+  if (!user) { sendJson(res, 401, { message: 'Please sign in to continue.' }); return null; }
+  return user;
+}
 function sessionCookie(token, maxAge = sessionLifetimeMs / 1000) {
   return `session=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAge}${isProduction ? '; Secure' : ''}`;
 }
@@ -69,6 +83,37 @@ function sendFile(res, fileName) {
 
 const server = http.createServer(async (req, res) => {
   const pathname = new URL(req.url, `http://${req.headers.host}`).pathname;
+  if (req.method === 'GET' && pathname === '/api/tasks') {
+    const user = requireUser(req, res);
+    if (!user) return;
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    const tasks = readTasks().filter((task) => task.userId === user.id).sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority] || b.createdAt.localeCompare(a.createdAt));
+    return sendJson(res, 200, { tasks });
+  }
+  if (req.method === 'POST' && pathname === '/api/tasks') {
+    const user = requireUser(req, res);
+    if (!user) return;
+    try {
+      const { title, priority } = await getBody(req);
+      const cleanTitle = typeof title === 'string' ? title.trim() : '';
+      if (!cleanTitle || cleanTitle.length > 140) return sendJson(res, 400, { message: 'Task title must be between 1 and 140 characters.' });
+      if (!['low', 'medium', 'high'].includes(priority)) return sendJson(res, 400, { message: 'Choose a valid priority.' });
+      const tasks = readTasks();
+      const task = { id: crypto.randomUUID(), userId: user.id, title: cleanTitle, priority, createdAt: new Date().toISOString() };
+      tasks.push(task); saveTasks(tasks);
+      return sendJson(res, 201, { task });
+    } catch { return sendJson(res, 400, { message: 'Invalid request.' }); }
+  }
+  if (req.method === 'DELETE' && /^\/api\/tasks\/[^/]+$/.test(pathname)) {
+    const user = requireUser(req, res);
+    if (!user) return;
+    const taskId = pathname.split('/').pop();
+    const tasks = readTasks();
+    const task = tasks.find((item) => item.id === taskId && item.userId === user.id);
+    if (!task) return sendJson(res, 404, { message: 'Task not found.' });
+    saveTasks(tasks.filter((item) => item.id !== taskId));
+    return sendJson(res, 200, { message: 'Task deleted.' });
+  }
   if (req.method === 'POST' && pathname === '/api/register') {
     try {
       const { username, email, password } = await getBody(req);

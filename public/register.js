@@ -26,7 +26,7 @@ form.addEventListener('submit', async (event) => {
     if (!response.ok) throw new Error(result.message);
     message.textContent = result.message;
     message.classList.add('success');
-    setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
   } catch (error) {
     message.textContent = error.message || 'Unable to create your account. Please try again.';
   } finally {

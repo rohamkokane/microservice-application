@@ -26,6 +26,7 @@ form.addEventListener('submit', async (event) => {
     if (!response.ok) throw new Error(result.message);
     message.textContent = result.message;
     message.classList.add('success');
+    window.setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
   } catch (error) {
     message.textContent = error.message || 'Unable to sign in. Please try again.';
   } finally {
