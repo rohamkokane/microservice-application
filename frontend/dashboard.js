@@ -1,4 +1,5 @@
-const taskApi = 'http://localhost:3002/api/tasks';
+const authApi = 'http://localhost:3000/api/auth';
+const taskApi = 'http://localhost:3000/api/tasks';
 const taskForm = document.querySelector('#task-form');
 const list = document.querySelector('.tasks');
 const empty = document.querySelector('.empty');
@@ -6,7 +7,7 @@ const count = document.querySelector('#count');
 const message = document.querySelector('.message');
 
 async function auth() {
-  const response = await fetch('/api/session');
+  const response = await fetch(`${authApi}/session`, { credentials: 'include' });
   if (!response.ok) return location.href = '/';
   const data = await response.json();
   document.querySelector('#name').textContent = data.user.name;
@@ -66,5 +67,5 @@ taskForm.addEventListener('submit', async (event) => {
   }
 });
 
-document.querySelector('#logout').onclick = async () => { await fetch('/api/logout', { method: 'POST' }); location.href = '/'; };
+document.querySelector('#logout').onclick = async () => { await fetch(`${authApi}/logout`, { method: 'POST', credentials: 'include' }); location.href = '/'; };
 auth().then(load).catch((error) => { message.textContent = error.message; });

@@ -1,0 +1,32 @@
+services:
+
+
+  frontend:
+    build: ./frontend
+    container_name: my-frontend
+    ports:
+      - "3001:80"
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: my-api-service
+    ports:
+      - "3000:3000"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:4001
+      TASK_SERVICE_URL: http://task-service:4002
+      WEB_ORIGIN: http://localhost:3001
+  
+  auth-service:
+    build: ./auth-service
+    container_name: my-auth-service
+    ports:
+      - "4001:4001"
+
+  task-service:
+    build: ./task-service
+    container_name: my-task-service
+    ports:
+      - "4002:4002"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:4001

@@ -4,6 +4,7 @@
   "private": true,
   "description": "Lumina auth and task microservices",
   "scripts": {
+    "start:gateway": "npm --prefix api-gateway start",
     "start:auth": "npm --prefix auth-service start",
     "start:tasks": "npm --prefix task-service start"
   }
