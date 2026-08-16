@@ -17,16 +17,16 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
-                sh 'docker compose build'
+                bat 'docker compose build'
             }
         }
 
         stage('smoke test') {
             steps {
-                sh 'docker compose up -d'
+                bat 'docker compose up -d'
                 retry(10) {
                 sleep 2
-                sh 'curl --fail http://localhost:3000/health'
+                bat 'curl --fail http://localhost:3000/health'
                 }
 
             
@@ -42,26 +42,26 @@ pipeline {
                         passwordVariable: 'DOCKER_TOKEN'
                     )
                 ]) {
-                    sh 'echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USER" --password-stdin'
+                    bat 'echo "%DOCKER_TOKEN%" | docker login -u "%DOCKER_USER%" --password-stdin'
                 }
             }
         }
 
         stage('Tag Docker Images') {
             steps {
-                sh 'docker tag microservice-application-api-gateway roham132/lumina-api-gateway:latest'
-                sh 'docker tag microservice-application-auth-service roham132/lumina-auth-service:latest'
-                sh 'docker tag microservice-application-task-service roham132/lumina-task-service:latest'
-                sh 'docker tag microservice-application-frontend roham132/lumina-frontend:latest'
+                bat 'docker tag microservice-application-api-gateway roham132/lumina-api-gateway:latest'
+                bat 'docker tag microservice-application-auth-service roham132/lumina-auth-service:latest'
+                bat 'docker tag microservice-application-task-service roham132/lumina-task-service:latest'
+                bat 'docker tag microservice-application-frontend roham132/lumina-frontend:latest'
             }
         }
 
         stage('Push Docker Images') {
             steps {
-                sh 'docker push roham132/lumina-api-gateway:latest'
-                sh 'docker push roham132/lumina-auth-service:latest'
-                sh 'docker push roham132/lumina-task-service:latest'
-                sh 'docker push roham132/lumina-frontend:latest'
+                bat 'docker push roham132/lumina-api-gateway:latest'
+                bat 'docker push roham132/lumina-auth-service:latest'
+                bat 'docker push roham132/lumina-task-service:latest'
+                bat 'docker push roham132/lumina-frontend:latest'
             }
         }
     }
