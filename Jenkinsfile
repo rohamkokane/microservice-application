@@ -64,7 +64,5 @@ pipeline {
                 sh 'docker push roham132/lumina-frontend:latest'
             }
         }
-
-        stage
     }
 }
