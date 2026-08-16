@@ -40,20 +40,16 @@ function proxy(req, res, target, targetPath) {
       headers
     },
     (upstreamResponse) => {
-
-      // Copy the response headers from the internal service
       const responseHeaders = {
         ...upstreamResponse.headers
       };
 
-      // Remove CORS headers from the internal service.
-      // The API Gateway is responsible for CORS.
+      // Gateway is responsible for CORS
       delete responseHeaders['access-control-allow-origin'];
       delete responseHeaders['access-control-allow-credentials'];
       delete responseHeaders['access-control-allow-methods'];
       delete responseHeaders['access-control-allow-headers'];
 
-      // Send the upstream response with Gateway CORS headers
       res.writeHead(
         upstreamResponse.statusCode || 502,
         {
@@ -85,16 +81,29 @@ function proxy(req, res, target, targetPath) {
 }
 
 http.createServer((req, res) => {
-
   const url = new URL(
     req.url,
     `http://${req.headers.host}`
   );
 
-  // Handle CORS preflight requests
+  // CORS preflight
   if (req.method === 'OPTIONS') {
     res.writeHead(204, corsHeaders());
     return res.end();
+  }
+
+  // Health check
+  if (req.method === 'GET' && url.pathname === '/health') {
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      ...corsHeaders()
+    });
+
+    return res.end(
+      JSON.stringify({
+        status: 'ok'
+      })
+    );
   }
 
   // Auth Service

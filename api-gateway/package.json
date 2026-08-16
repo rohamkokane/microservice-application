@@ -2,5 +2,12 @@
   "name": "lumina-api-gateway",
   "version": "1.0.0",
   "private": true,
-  "scripts": { "start": "node server.js" }
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+    
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }

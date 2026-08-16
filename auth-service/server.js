@@ -284,7 +284,6 @@ http.createServer(async (req, res) => {
     );
   }
 
-  // Any other request
   res.writeHead(405);
   res.end();
 

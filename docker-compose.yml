@@ -1,6 +1,5 @@
 services:
 
-
   frontend:
     build: ./frontend
     container_name: my-frontend
@@ -16,12 +15,20 @@ services:
       AUTH_SERVICE_URL: http://auth-service:4001
       TASK_SERVICE_URL: http://task-service:4002
       WEB_ORIGIN: http://localhost:3001
-  
+    volumes:
+      - ./api-gateway:/app
+      - /app/node_modules
+    command: npm run dev
+
   auth-service:
     build: ./auth-service
     container_name: my-auth-service
     ports:
       - "4001:4001"
+    volumes:
+      - ./auth-service:/app
+      - /app/node_modules
+    command: npm run dev
 
   task-service:
     build: ./task-service
@@ -30,3 +37,7 @@ services:
       - "4002:4002"
     environment:
       AUTH_SERVICE_URL: http://auth-service:4001
+    volumes:
+      - ./task-service:/app
+      - /app/node_modules
+    command: npm run dev
