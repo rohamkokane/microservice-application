@@ -42,7 +42,7 @@ pipeline {
                         passwordVariable: 'DOCKER_TOKEN'
                     )
                 ]) {
-                    bat 'echo "%DOCKER_TOKEN%" | docker login -u "%DOCKER_USER%" --password-stdin'
+                    bat 'echo "%DOCKER_TOKEN%" | docker login -u %DOCKER_USER% --password-stdin'
                 }
             }
         }
