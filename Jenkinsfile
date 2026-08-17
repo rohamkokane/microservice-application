@@ -21,19 +21,18 @@ pipeline {
             }
         }
 
-        stage('smoke test') {
+        stage('Smoke Test') {
             steps {
                 bat 'docker compose up -d'
-                retry(10) {
-                sleep 2
-                bat 'curl --fail http://localhost:3000/health'
-                }
 
-            
+                retry(10) {
+                    sleep 2
+                    bat 'curl --fail http://localhost:3000/health'
+                }
             }
         }
 
-        stage('docker login'){
+        stage('Check Docker Credential') {
             steps {
                 withCredentials([
                     usernamePassword(
@@ -42,7 +41,25 @@ pipeline {
                         passwordVariable: 'DOCKER_TOKEN'
                     )
                 ]) {
-                    bat 'echo %DOCKER_TOKEN% | docker login -u %DOCKER_USER% --password-stdin'
+                    bat '''
+                        powershell -NoProfile -Command "$bytes=[Text.Encoding]::UTF8.GetBytes($env:DOCKER_TOKEN); $hash=[Security.Cryptography.SHA256]::Create().ComputeHash($bytes); Write-Host ('Username: ' + $env:DOCKER_USER); Write-Host ('Token SHA256: ' + [BitConverter]::ToString($hash).Replace('-', ''))"
+                    '''
+                }
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_TOKEN'
+                    )
+                ]) {
+                    bat '''
+                        powershell -NoProfile -Command "$env:DOCKER_TOKEN | docker login -u $env:DOCKER_USER --password-stdin"
+                    '''
                 }
             }
         }
