@@ -66,10 +66,10 @@ pipeline {
 
         stage('Tag Docker Images') {
             steps {
-                bat 'docker tag microservice-application-api-gateway roham132/lumina-api-gateway:latest'
-                bat 'docker tag microservice-application-auth-service roham132/lumina-auth-service:latest'
-                bat 'docker tag microservice-application-task-service roham132/lumina-task-service:latest'
-                bat 'docker tag microservice-application-frontend roham132/lumina-frontend:latest'
+                bat 'docker tag luminaci-cd-api-gateway roham132/lumina-api-gateway:latest'
+                bat 'docker tag luminaci-cd-auth-service roham132/lumina-auth-service:latest'
+                bat 'docker tag luminaci-cd-task-service roham132/lumina-task-service:latest'
+                bat 'docker tag luminaci-cd-frontend roham132/lumina-frontend:latest'
             }
         }
 
