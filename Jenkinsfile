@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        AWS_REGION = 'ap-south-1'
+    }
+
     stages {
 
         stage('Checkout') {
@@ -48,7 +52,7 @@ pipeline {
             }
         }
 
-        stage('Docker Login') {
+        stage('ECR Login') {
             steps {
                 withCredentials([
                     usernamePassword(

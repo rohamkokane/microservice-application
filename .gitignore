@@ -12,3 +12,14 @@ node_modules/
 Thumbs.db
 .vscode/
 .idea/
+
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+*.tfvars
+*.tfvars.json
+
+crash.log
+crash.*.log
