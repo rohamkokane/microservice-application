@@ -37,21 +37,31 @@ pipeline {
         }
 
         stage('Check AWS') {
-    steps {
-        bat '''
-            whoami
-            aws --version
-            aws sts get-caller-identity
-        '''
-    }
-}
-
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'AWS-access',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    )
+                ]) {
+                    bat '''
+                        whoami
+                        aws --version
+                        aws sts get-caller-identity
+                    '''
+                }
+            }
+        }
 
         stage('ECR Login') {
             steps {
                 withCredentials([
-                    [$class: 'AmazonWebServicesCredentialsBinding',
-                     credentialsId: 'AWS-access']
+                    usernamePassword(
+                        credentialsId: 'AWS-access',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    )
                 ]) {
                     bat '''
                         for /f "delims=" %%i in ('aws sts get-caller-identity --query Account --output text') do set AWS_ACCOUNT_ID=%%i
@@ -65,8 +75,11 @@ pipeline {
         stage('Tag Docker Images') {
             steps {
                 withCredentials([
-                    [$class: 'AmazonWebServicesCredentialsBinding',
-                     credentialsId: 'AWS-access']
+                    usernamePassword(
+                        credentialsId: 'AWS-access',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    )
                 ]) {
                     bat '''
                         for /f "delims=" %%i in ('aws sts get-caller-identity --query Account --output text') do set AWS_ACCOUNT_ID=%%i
@@ -86,8 +99,11 @@ pipeline {
         stage('Push Docker Images') {
             steps {
                 withCredentials([
-                    [$class: 'AmazonWebServicesCredentialsBinding',
-                     credentialsId: 'AWS-access']
+                    usernamePassword(
+                        credentialsId: 'AWS-access',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    )
                 ]) {
                     bat '''
                         for /f "delims=" %%i in ('aws sts get-caller-identity --query Account --output text') do set AWS_ACCOUNT_ID=%%i
