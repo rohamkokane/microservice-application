@@ -36,33 +36,16 @@ pipeline {
             }
         }
 
-        stage('Check Docker Credential') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_TOKEN'
-                    )
-                ]) {
-                    bat '''
-                        powershell -NoProfile -Command "$bytes=[Text.Encoding]::UTF8.GetBytes($env:DOCKER_TOKEN); $hash=[Security.Cryptography.SHA256]::Create().ComputeHash($bytes); Write-Host ('Username: ' + $env:DOCKER_USER); Write-Host ('Token SHA256: ' + [BitConverter]::ToString($hash).Replace('-', ''))"
-                    '''
-                }
-            }
-        }
-
         stage('ECR Login') {
             steps {
                 withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_TOKEN'
-                    )
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: 'aws-ecr-credentials']
                 ]) {
                     bat '''
-                        powershell -NoProfile -Command "$env:DOCKER_TOKEN | docker login -u $env:DOCKER_USER --password-stdin"
+                        for /f "delims=" %%i in ('aws sts get-caller-identity --query Account --output text') do set AWS_ACCOUNT_ID=%%i
+
+                        aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com
                     '''
                 }
             }
@@ -70,19 +53,43 @@ pipeline {
 
         stage('Tag Docker Images') {
             steps {
-                bat 'docker tag luminaci-cd-api-gateway roham132/lumina-api-gateway:latest'
-                bat 'docker tag luminaci-cd-auth-service roham132/lumina-auth-service:latest'
-                bat 'docker tag luminaci-cd-task-service roham132/lumina-task-service:latest'
-                bat 'docker tag luminaci-cd-frontend roham132/lumina-frontend:latest'
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: 'aws-ecr-credentials']
+                ]) {
+                    bat '''
+                        for /f "delims=" %%i in ('aws sts get-caller-identity --query Account --output text') do set AWS_ACCOUNT_ID=%%i
+
+                        docker tag luminaci-cd-api-gateway %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/lumina-api-gateway:latest
+
+                        docker tag luminaci-cd-auth-service %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/lumina-auth-service:latest
+
+                        docker tag luminaci-cd-task-service %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/lumina-task-service:latest
+
+                        docker tag luminaci-cd-frontend %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/lumina-frontend:latest
+                    '''
+                }
             }
         }
 
         stage('Push Docker Images') {
             steps {
-                bat 'docker push roham132/lumina-api-gateway:latest'
-                bat 'docker push roham132/lumina-auth-service:latest'
-                bat 'docker push roham132/lumina-task-service:latest'
-                bat 'docker push roham132/lumina-frontend:latest'
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: 'aws-ecr-credentials']
+                ]) {
+                    bat '''
+                        for /f "delims=" %%i in ('aws sts get-caller-identity --query Account --output text') do set AWS_ACCOUNT_ID=%%i
+
+                        docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/lumina-api-gateway:latest
+
+                        docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/lumina-auth-service:latest
+
+                        docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/lumina-task-service:latest
+
+                        docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/lumina-frontend:latest
+                    '''
+                }
             }
         }
     }
