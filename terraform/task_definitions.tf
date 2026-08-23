@@ -20,6 +20,21 @@ resource "aws_ecs_task_definition" "api_gateway" {
         }
       ]
 
+      environment = [
+        {
+          name  = "AUTH_SERVICE_URL"
+          value = "http://auth.lumina.local:4001"
+        },
+        {
+          name  = "TASK_SERVICE_URL"
+          value = "http://task.lumina.local:4002"
+        },
+        {
+          name  = "WEB_ORIGIN"
+          value = "http://${aws_lb.lumina.dns_name}"
+        }
+      ]
+
       logConfiguration = {
         logDriver = "awslogs"
 
@@ -89,6 +104,13 @@ resource "aws_ecs_task_definition" "task_service" {
         {
           containerPort = 4002
           protocol      = "tcp"
+        }
+      ]
+
+      environment = [
+        {
+          name  = "AUTH_SERVICE_URL"
+          value = "http://auth.lumina.local:4001"
         }
       ]
 

@@ -32,6 +32,10 @@ resource "aws_ecs_service" "auth_service" {
   desired_count = 1
   launch_type   = "FARGATE"
 
+  service_registries {
+    registry_arn = aws_service_discovery_service.auth.arn
+  }
+
   network_configuration {
     subnets = [
       aws_subnet.public_a.id,
@@ -51,6 +55,10 @@ resource "aws_ecs_service" "task_service" {
 
   desired_count = 1
   launch_type   = "FARGATE"
+
+  service_registries {
+    registry_arn = aws_service_discovery_service.task.arn
+  }
 
   network_configuration {
     subnets = [
