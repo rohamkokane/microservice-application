@@ -1,4 +1,4 @@
-const gateway = 'api/auth';
+const gateway = '/api/auth';
 const form = document.querySelector('form');
 const message = document.querySelector('.message');
 
