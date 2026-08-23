@@ -1,5 +1,5 @@
-const authApi = 'http://localhost:3000/api/auth';
-const taskApi = 'http://localhost:3000/api/tasks';
+const authApi = '/api/auth';
+const taskApi = '/api/tasks';
 const taskForm = document.querySelector('#task-form');
 const list = document.querySelector('.tasks');
 const empty = document.querySelector('.empty');

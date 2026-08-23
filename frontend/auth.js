@@ -1,4 +1,4 @@
-const gateway = 'http://13.126.244.8:3000/api/auth';
+const gateway = 'api/auth';
 const form = document.querySelector('form');
 const message = document.querySelector('.message');
 
